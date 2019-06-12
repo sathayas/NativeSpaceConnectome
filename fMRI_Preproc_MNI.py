@@ -1,4 +1,6 @@
 import os
+import numpy as np
+import nibabel as nib
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import nipype.interfaces.spm as spm # importing SPM interface functions
@@ -68,7 +70,7 @@ if not os.path.exists(outDirSubj):
     os.makedirs(outDirSubj)
 
 # finally, output directory for the results in MNI space
-outDir = os.path.join(outDirSubj,'MNI')
+outDir = outDirSubj
 # if the directory doesn't exist, create it
 if not os.path.exists(outDir):
     os.makedirs(outDir)
@@ -83,10 +85,12 @@ gunzip_T1w = Node(Gunzip(in_file=imageT1),
               name="gunzip_T1w")
 
 # Normalize - normalizes structural images to the MNI template
+#nib.load(imagefMRI).header['pixdim'][1:4]
 normalize = Node(spm.Normalize12(jobtype='estwrite',
                                  tpm=fTPM,
                                  write_bounding_box=[[-90, -120, -70],
-                                                     [90, 90, 105]]),
+                                                     [90, 90, 105]],
+                                 write_voxel_sizes=[3,3,4]),
                  name="normalize")
 
 
@@ -133,52 +137,52 @@ datasink = Node(DataSink(base_directory=outDir),
                 name='datasink')
 
 # creating a workflow
-preprocfMRI = Workflow(name="PreprocfMRI", base_dir=outDir)
+MNI = Workflow(name="MNI", base_dir=outDir)
 
 # connecting the nodes to the main workflow
-preprocfMRI.connect(extract, 'roi_file', realign, 'in_files')
-preprocfMRI.connect(gunzip_T1w, 'out_file', coreg, 'target')
-preprocfMRI.connect(realign, 'mean_image', coreg, 'source')
-preprocfMRI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
-preprocfMRI.connect(gunzip_T1w, 'out_file', normalize, 'image_to_align')
-preprocfMRI.connect(coreg, 'coregistered_files', normalize, 'apply_to_files')
-preprocfMRI.connect(normalize, 'normalized_files', reslice, 'space_defining')
-preprocfMRI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
-preprocfMRI.connect(reslice, 'out_file', applymask, 'mask_file')
-preprocfMRI.connect(normalize, 'normalized_files', applymask, 'in_file')
+MNI.connect(extract, 'roi_file', realign, 'in_files')
+MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
+MNI.connect(realign, 'mean_image', coreg, 'source')
+MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
+MNI.connect(gunzip_T1w, 'out_file', normalize, 'image_to_align')
+MNI.connect(coreg, 'coregistered_files', normalize, 'apply_to_files')
+MNI.connect(normalize, 'normalized_files', reslice, 'space_defining')
+MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
+MNI.connect(reslice, 'out_file', applymask, 'mask_file')
+MNI.connect(normalize, 'normalized_files', applymask, 'in_file')
 
 
-#preprocfMRI.connect([(extract, realign, [('roi_file', 'in_files')])])
-#preprocfMRI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])
-#preprocfMRI.connect([(realign, coreg, [('mean_image', 'source')])])
-#preprocfMRI.connect([(realign, coreg, [('realigned_files', 'apply_to_files')])])
-#preprocfMRI.connect([(gunzip_T1w, normalize, [('out_file', 'image_to_align')])])
-#preprocfMRI.connect([(coreg, normalize, [('coregistered_files', 'apply_to_files')])])
-#preprocfMRI.connect([(normalize, smooth, [('normalized_files', 'in_files')])])
-#preprocfMRI.connect([(smooth, reslice, [('smoothed_files', 'space_defining')])])
-#preprocfMRI.connect([(gunzip_mask, reslice, [('out_file', 'in_file')])])
-#preprocfMRI.connect([(reslice, applymask, [('out_file', 'mask_file')])])
-#preprocfMRI.connect([(smooth, applymask, [('smoothed_files', 'in_file')])])
+#MNI.connect([(extract, realign, [('roi_file', 'in_files')])])
+#MNI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])
+#MNI.connect([(realign, coreg, [('mean_image', 'source')])])
+#MNI.connect([(realign, coreg, [('realigned_files', 'apply_to_files')])])
+#MNI.connect([(gunzip_T1w, normalize, [('out_file', 'image_to_align')])])
+#MNI.connect([(coreg, normalize, [('coregistered_files', 'apply_to_files')])])
+#MNI.connect([(normalize, smooth, [('normalized_files', 'in_files')])])
+#MNI.connect([(smooth, reslice, [('smoothed_files', 'space_defining')])])
+#MNI.connect([(gunzip_mask, reslice, [('out_file', 'in_file')])])
+#MNI.connect([(reslice, applymask, [('out_file', 'mask_file')])])
+#MNI.connect([(smooth, applymask, [('smoothed_files', 'in_file')])])
 
 
 # connections to the datasink
-preprocfMRI.connect(realign, 'realignment_parameters',
+MNI.connect(realign, 'realignment_parameters',
                     datasink, 'Derivatives.@mcPar')
-preprocfMRI.connect(normalize, 'normalized_image',
+MNI.connect(normalize, 'normalized_image',
                     datasink, 'Derivatives.@T1_standard')
-preprocfMRI.connect(normalize, 'normalized_files',
+MNI.connect(normalize, 'normalized_files',
                     datasink, 'Derivatives.@fMRI_standard')
 
 
 # writing out graphs
-preprocfMRI.write_graph(graph2use='orig', dotfilename='graph_orig.dot')
+MNI.write_graph(graph2use='orig', dotfilename='graph_orig.dot')
 
 # showing the graph
 #plt.figure(figsize=[10,6])
-#img=mpimg.imread(os.path.join(outDir,"PreprocfMRI","graph_orig_detailed.png"))
+#img=mpimg.imread(os.path.join(outDir,"MNI","graph_orig_detailed.png"))
 #imgplot = plt.imshow(img)
 #plt.axis('off')
 #plt.show()
 
 # running the workflow
-preprocfMRI.run()
+MNI.run()
