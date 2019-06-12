@@ -6,41 +6,51 @@ import nipype.interfaces.fsl as fsl # importing FSL interface functions
 from nipype import Node, Workflow  # components to construct workflow
 from nipype.interfaces.io import DataSink  # datasink
 from nipype.algorithms.misc import Gunzip  # gunzip interface
-from bids.grabbids import BIDSLayout  # BIDSLayout object to specify file(s)
 
-# Directory where your data set resides. This needs to be customized
-#dataDir = '/home/satoru/Teaching/fMRI_Fall_2018/Data/ds114'
-dataDir = '/Users/sh45474/Documents/Teaching/fMRI_Fall_2018/Data/ds114'
 
-# Creating the layout object for this BIDS data set
-layout = BIDSLayout(dataDir)
-
-# an fMRI image from one of the subjects (finger foot lips, test)
-imagefMRI = layout.get(subject='09',
-                       session='test',
-                       type='bold',
-                       task='fingerfootlips',
-                       extensions='nii.gz',
-                       return_type='file')[0]
-
-# an T1 image for the same subject (test)
-imageT1 = layout.get(subject='09',
-                     session='test',
-                     type='T1w',
-                     extensions='nii.gz',
-                     return_type='file')[0]
-
+##### Parameters and such
+# Sites where rs-fMRI data originate
+sites = ['Berlin_Margulies',
+         'Leiden_2200',
+         'Newark',
+         'NewYork_b',
+         'Oxford',
+         'Queensland'
+         ]
+# Directory where resting-state raw data reside
+dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 # template (it has to be tissue probability maps)
-fTPM = '/Users/sh45474/SoftwareTools/spm12/tpm/TPM.nii'
-#fTPM = '/usr/local/spm12/tpm/TPM.nii'
-
+fTPM = '/usr/local/spm12/tpm/TPM.nii'
 # brain mask in MNI space (from FSL)
 fmask = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask_dil.nii.gz'
+# Output directory (base)
+outDirBase = '/home/satoru/Projects/NativeSpaceConnectome/ProcessedData'
 
 
-# Output directory
-outDir = os.path.join(dataDir, 'WorkflowOutput')
 
+##### Choosing a single subject as to test the pipeline
+# picked a site
+iSite = sites[0]
+
+# getting a list of subject at this site
+dirSite = os.path.join(dataDir,iSite)
+listFiles = os.listdir(os.path.join(dirSite,'Raw'))
+listSubj = [s for s in listFiles if s[-5:].isnumeric()]
+
+# picked a random subject
+iSubj = listSubj[-1]
+
+# and the directories for that subject
+dirSubj = os.path.join(dirSite,'Raw',iSubj)
+dirSubjFunc = os.path.join(dirSubj,'func')
+dirSubjAnat = os.path.join(dirSubj,'anat')
+
+
+# rs-fMRI image from the selected subject
+imagefMRI = os.path.join(dirSubjFunc,'rest.nii.gz')
+
+# an T1 image for the same subject
+imageT1 = os.path.join(dirSubjFunc,'mprage_skullstripped.nii.gz')
 
 
 
@@ -98,15 +108,15 @@ applymask = Node(fsl.ApplyMask(),
                  name='applymask')
 
 # DataSink to collect outputs
-datasink = Node(DataSink(base_directory=outDir), 
+datasink = Node(DataSink(base_directory=outDir),
                 name='datasink')
 
 # creating a workflow
 preprocfMRI = Workflow(name="PreprocfMRI_combo", base_dir=outDir)
 
 # connecting the nodes to the main workflow
-preprocfMRI.connect([(extract, realign, [('roi_file', 'in_files')])])  
-preprocfMRI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])  
+preprocfMRI.connect([(extract, realign, [('roi_file', 'in_files')])])
+preprocfMRI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])
 preprocfMRI.connect([(realign, coreg, [('mean_image', 'source')])])
 preprocfMRI.connect([(realign, coreg, [('realigned_files', 'apply_to_files')])])
 preprocfMRI.connect([(gunzip_T1w, normalize, [('out_file', 'image_to_align')])])
@@ -119,13 +129,13 @@ preprocfMRI.connect([(smooth, applymask, [('smoothed_files', 'in_file')])])
 
 
 # connections to the datasink
-preprocfMRI.connect([(realign, datasink, [('realignment_parameters', 
+preprocfMRI.connect([(realign, datasink, [('realignment_parameters',
                                            'Combo_Preproc_fMRI.@mcPar')])])
-preprocfMRI.connect([(normalize, datasink, [('normalized_image', 
+preprocfMRI.connect([(normalize, datasink, [('normalized_image',
                                              'Combo_Preproc_fMRI.@T1_standard')])])
-preprocfMRI.connect([(normalize, datasink, [('normalized_files', 
+preprocfMRI.connect([(normalize, datasink, [('normalized_files',
                                              'Combo_Preproc_fMRI.@fMRI_standard')])])
-preprocfMRI.connect([(applymask, datasink, [('out_file', 
+preprocfMRI.connect([(applymask, datasink, [('out_file',
                                              'Combo_Preproc_fMRI.@SmoothfMRI_standard')])])
 
 # writing out graphs
