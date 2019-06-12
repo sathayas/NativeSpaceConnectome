@@ -54,6 +54,27 @@ imageT1 = os.path.join(dirSubjFunc,'mprage_skullstripped.nii.gz')
 
 
 
+##### Creating the output directory
+# directory for the site
+outDirSite = os.path.join(outDirBase, iSite)
+# if the directory doesn't exist, create it
+if not os.path.exists(outDirSite):
+    os.makedirs(outDirSite)
+
+# directory for the subject
+outDirSubj = os.path.join(outDirSite, iSubj)
+# if the directory doesn't exist, create it
+if not os.path.exists(outDirSubj):
+    os.makedirs(outDirSubj)
+
+# finally, output directory for the results in MNI space
+outDir = os.path.join(outDirSubj,'MNI')
+# if the directory doesn't exist, create it
+if not os.path.exists(outDir):
+    os.makedirs(outDir)
+
+
+
 #
 #    T1 Normalization nodes
 #
@@ -112,9 +133,13 @@ datasink = Node(DataSink(base_directory=outDir),
                 name='datasink')
 
 # creating a workflow
-preprocfMRI = Workflow(name="PreprocfMRI_combo", base_dir=outDir)
+preprocfMRI = Workflow(name="PreprocfMRI", base_dir=outDir)
 
 # connecting the nodes to the main workflow
+preprocfMRI.connect(extract, 'roi_file', realign, 'in_files')
+preprocfMRI.connect(, 'roi_file', realign, 'in_files')
+
+
 preprocfMRI.connect([(extract, realign, [('roi_file', 'in_files')])])
 preprocfMRI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])
 preprocfMRI.connect([(realign, coreg, [('mean_image', 'source')])])
