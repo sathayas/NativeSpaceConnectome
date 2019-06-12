@@ -162,14 +162,13 @@ preprocfMRI.connect(normalize, 'normalized_files', applymask, 'in_file')
 
 
 # connections to the datasink
-preprocfMRI.connect([(realign, datasink, [('realignment_parameters',
-                                           'Combo_Preproc_fMRI.@mcPar')])])
-preprocfMRI.connect([(normalize, datasink, [('normalized_image',
-                                             'Combo_Preproc_fMRI.@T1_standard')])])
-preprocfMRI.connect([(normalize, datasink, [('normalized_files',
-                                             'Combo_Preproc_fMRI.@fMRI_standard')])])
-preprocfMRI.connect([(applymask, datasink, [('out_file',
-                                             'Combo_Preproc_fMRI.@SmoothfMRI_standard')])])
+preprocfMRI.connect(realign, 'realignment_parameters',
+                    datasink, 'Derivatives.@mcPar')
+preprocfMRI.connect(normalize, 'normalized_image',
+                    datasink, 'Derivatives.@T1_standard')
+preprocfMRI.connect(normalize, 'normalized_files',
+                    datasink, 'Derivatives.@fMRI_standard')
+
 
 # writing out graphs
 preprocfMRI.write_graph(graph2use='orig', dotfilename='graph_orig.dot')
