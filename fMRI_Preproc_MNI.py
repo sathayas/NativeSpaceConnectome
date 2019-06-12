@@ -50,7 +50,7 @@ dirSubjAnat = os.path.join(dirSubj,'anat')
 imagefMRI = os.path.join(dirSubjFunc,'rest.nii.gz')
 
 # an T1 image for the same subject
-imageT1 = os.path.join(dirSubjFunc,'mprage_skullstripped.nii.gz')
+imageT1 = os.path.join(dirSubjAnat,'mprage_skullstripped.nii.gz')
 
 
 
@@ -144,7 +144,7 @@ preprocfMRI.connect(gunzip_T1w, 'out_file', normalize, 'image_to_align')
 preprocfMRI.connect(coreg, 'coregistered_files', normalize, 'apply_to_files')
 preprocfMRI.connect(normalize, 'normalized_files', reslice, 'space_defining')
 preprocfMRI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
-reprocfMRI.connect(reslice, 'out_file', applymask, 'mask_file')
+preprocfMRI.connect(reslice, 'out_file', applymask, 'mask_file')
 preprocfMRI.connect(normalize, 'normalized_files', applymask, 'in_file')
 
 
@@ -175,10 +175,10 @@ preprocfMRI.write_graph(graph2use='orig', dotfilename='graph_orig.dot')
 
 # showing the graph
 plt.figure(figsize=[10,6])
-img=mpimg.imread(os.path.join(outDir,"PreprocfMRI_combo","graph_orig_detailed.png"))
+img=mpimg.imread(os.path.join(outDir,"PreprocfMRI","graph_orig_detailed.png"))
 imgplot = plt.imshow(img)
 plt.axis('off')
 plt.show()
 
 # running the workflow
-preprocfMRI.run()
+#preprocfMRI.run()
