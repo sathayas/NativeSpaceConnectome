@@ -85,13 +85,11 @@ gunzip_T1w = Node(Gunzip(in_file=imageT1),
               name="gunzip_T1w")
 
 # Normalize - normalizes structural images to the MNI template
-#nib.load(imagefMRI).header['pixdim'][1:4]
-normalize = Node(spm.Normalize12(jobtype='estwrite',
+normalizeT1 = Node(spm.Normalize12(jobtype='estwrite',
                                  tpm=fTPM,
                                  write_bounding_box=[[-90, -120, -70],
-                                                     [90, 90, 105]],
-                                 write_voxel_sizes=[3,3,4]),
-                 name="normalize")
+                                                     [90, 90, 105]]),
+                   name="normalizeT1")
 
 
 
@@ -116,9 +114,13 @@ coreg = Node(spm.Coregister(cost_function='nmi',
                             jobtype='estimate'),
              name="coreg")
 
-# smoothing node
-smooth = Node(spm.Smooth(fwhm=[6,6,6]),
-              name='smooth')
+# warping fMRI by applying the warping estimated for T1
+voxfMRI = list(nib.load(imagefMRI).header['pixdim'][1:4])
+normalizefMRI = Node(spm.Normalize12(jobtype='write',
+                                     write_bounding_box=[[-90, -120, -70],
+                                                        [90, 90, 105]],
+                                     write_voxel_sizes=voxfMRI),
+                     name="normalizefMRI")
 
 # gunzip node, FSL brain mask
 gunzip_mask = Node(Gunzip(in_file=fmask),
@@ -144,12 +146,13 @@ MNI.connect(extract, 'roi_file', realign, 'in_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
 MNI.connect(realign, 'mean_image', coreg, 'source')
 MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
-MNI.connect(gunzip_T1w, 'out_file', normalize, 'image_to_align')
-MNI.connect(coreg, 'coregistered_files', normalize, 'apply_to_files')
-MNI.connect(normalize, 'normalized_files', reslice, 'space_defining')
+MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
+MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
+MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
+MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
 MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
 MNI.connect(reslice, 'out_file', applymask, 'mask_file')
-MNI.connect(normalize, 'normalized_files', applymask, 'in_file')
+MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
 
 
 #MNI.connect([(extract, realign, [('roi_file', 'in_files')])])
@@ -168,9 +171,9 @@ MNI.connect(normalize, 'normalized_files', applymask, 'in_file')
 # connections to the datasink
 MNI.connect(realign, 'realignment_parameters',
                     datasink, 'Derivatives.@mcPar')
-MNI.connect(normalize, 'normalized_image',
+MNI.connect(normalizeT1, 'normalized_image',
                     datasink, 'Derivatives.@T1_standard')
-MNI.connect(normalize, 'normalized_files',
+MNI.connect(normalizefMRI, 'normalized_image',
                     datasink, 'Derivatives.@fMRI_standard')
 
 
