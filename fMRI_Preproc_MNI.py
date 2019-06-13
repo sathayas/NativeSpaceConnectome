@@ -82,14 +82,22 @@ if not os.path.exists(outDir):
 #
 # gunzip node
 gunzip_T1w = Node(Gunzip(in_file=imageT1),
-              name="gunzip_T1w")
+                  name="gunzip_T1w")
+
+# Segmentation, native space
+segNative = Node(spm.NewSegment(),
+                 name='segNative')
 
 # Normalize - normalizes structural images to the MNI template
 normalizeT1 = Node(spm.Normalize12(jobtype='estwrite',
-                                 tpm=fTPM,
-                                 write_bounding_box=[[-90, -120, -70],
-                                                     [90, 90, 105]]),
+                                    tpm=fTPM,
+                                    write_bounding_box=[[-90, -120, -70],
+                                                        [90, 90, 105]]),
                    name="normalizeT1")
+
+# Segmentation, template space
+segMNI = Node(spm.NewSegment(),
+              name='segMNI')
 
 
 
@@ -130,6 +138,10 @@ gunzip_mask = Node(Gunzip(in_file=fmask),
 reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
                name='reslice')
 
+# Reslice the FSL template to match fMRI
+reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
+               name='reslice')
+
 # masking the fMRI with a brain mask
 applymask = Node(fsl.ApplyMask(),
                  name='applymask')
@@ -143,10 +155,12 @@ MNI = Workflow(name="MNI", base_dir=outDir)
 
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
+MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
 MNI.connect(realign, 'mean_image', coreg, 'source')
 MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
 MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
+MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
 MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
 MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
 MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
@@ -157,6 +171,10 @@ MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
 # connections to the datasink
 MNI.connect(realign, 'realignment_parameters',
                     datasink, 'Derivatives.@mcPar')
+MNI.connect(segNative, 'native_class_images',
+                    datasink, 'Derivatives.@Seg_Native')
+MNI.connect(segNative, 'normalized_class_images',
+                    datasink, 'Derivatives.@Seg_MNI')
 MNI.connect(normalizeT1, 'normalized_image',
                     datasink, 'Derivatives.@T1_standard')
 MNI.connect(normalizefMRI, 'normalized_image',
