@@ -154,20 +154,6 @@ MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
 MNI.connect(reslice, 'out_file', applymask, 'mask_file')
 MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
 
-
-#MNI.connect([(extract, realign, [('roi_file', 'in_files')])])
-#MNI.connect([(gunzip_T1w, coreg, [('out_file', 'target')])])
-#MNI.connect([(realign, coreg, [('mean_image', 'source')])])
-#MNI.connect([(realign, coreg, [('realigned_files', 'apply_to_files')])])
-#MNI.connect([(gunzip_T1w, normalize, [('out_file', 'image_to_align')])])
-#MNI.connect([(coreg, normalize, [('coregistered_files', 'apply_to_files')])])
-#MNI.connect([(normalize, smooth, [('normalized_files', 'in_files')])])
-#MNI.connect([(smooth, reslice, [('smoothed_files', 'space_defining')])])
-#MNI.connect([(gunzip_mask, reslice, [('out_file', 'in_file')])])
-#MNI.connect([(reslice, applymask, [('out_file', 'mask_file')])])
-#MNI.connect([(smooth, applymask, [('smoothed_files', 'in_file')])])
-
-
 # connections to the datasink
 MNI.connect(realign, 'realignment_parameters',
                     datasink, 'Derivatives.@mcPar')
