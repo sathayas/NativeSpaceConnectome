@@ -27,8 +27,8 @@ fTPM = '/usr/local/spm12/tpm/TPM.nii'
 # brain mask in MNI space (from FSL)
 fmask = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask_dil.nii.gz'
 # Output directory (base)
-outDirBase = '/home/satoru/Projects/NativeSpaceConnectome/ProcessedData'
-
+#outDirBase = '/home/satoru/Projects/NativeSpaceConnectome/ProcessedData'
+outDirBase = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/ProcessedData'
 
 
 ##### Choosing a single subject as to test the pipeline
