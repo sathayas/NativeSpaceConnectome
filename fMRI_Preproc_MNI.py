@@ -53,7 +53,7 @@ dirSubjAnat = os.path.join(dirSubj,'anat')
 # rs-fMRI image from the selected subject
 imagefMRI = os.path.join(dirSubjFunc,'rest.nii.gz')
 # voxel size for the fMRI data
-voxfMRI = list(nib.load(imagefMRI).header['pixdim'][1:4])
+voxfMRI = list(nib.load(imagefMRI).header['pixdim'][1:4].astype(float))
 
 # an T1 image for the same subject
 imageT1 = os.path.join(dirSubjAnat,'mprage_anonymized.nii.gz')
