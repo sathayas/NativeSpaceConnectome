@@ -23,7 +23,8 @@ sites = ['Berlin_Margulies',
 #dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
 # template (it has to be tissue probability maps)
-fTPM = '/usr/local/spm12/tpm/TPM.nii'
+#fTPM = '/usr/local/spm12/tpm/TPM.nii'
+fTPM = '/Users/sh45474/SoftwareTools/spm12/tpm/TPM.nii'
 # brain mask in MNI space (from FSL)
 fmask = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask_dil.nii.gz'
 # Output directory (base)
