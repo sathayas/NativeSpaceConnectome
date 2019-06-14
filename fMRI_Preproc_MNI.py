@@ -20,7 +20,8 @@ sites = ['Berlin_Margulies',
          'Queensland'
          ]
 # Directory where resting-state raw data reside
-dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
+#dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
+dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
 # template (it has to be tissue probability maps)
 fTPM = '/usr/local/spm12/tpm/TPM.nii'
 # brain mask in MNI space (from FSL)
