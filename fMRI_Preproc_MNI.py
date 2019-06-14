@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import nipype.interfaces.spm as spm # importing SPM interface functions
 import nipype.interfaces.fsl as fsl # importing FSL interface functions
-from nipype import Node, Workflow  # components to construct workflow
+from nipype import Node, MapNode, Workflow  # components to construct workflow
 from nipype.interfaces.io import DataSink  # datasink
 from nipype.algorithms.misc import Gunzip  # gunzip interface
 
@@ -142,7 +142,8 @@ reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
                name='reslice')
 
 # Reslice the native segmentation images to match fMRI
-resliceSegNat = Node(spm.utils.ResliceToReference(interpolation=0),
+resliceSegNat = MapNode(spm.utils.ResliceToReference(interpolation=0),
+                        iterfield=['in_files'],
                      name='resliceSegNat')
 
 # Reslice the template segmentation images to match fMRI
