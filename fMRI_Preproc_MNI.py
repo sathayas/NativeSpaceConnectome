@@ -142,8 +142,8 @@ reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
                name='reslice')
 
 # Reslice the native segmentation images to match fMRI
-resliceSegNat = MapNode(spm.utils.ResliceToReference(interpolation=0),
-                        iterfield=['in_files'],
+resliceSegNat = MapNode(spm.utils.Reslice(interpolation=0),
+                        iterfield=['in_file'],
                      name='resliceSegNat')
 
 # Reslice the template segmentation images to match fMRI
@@ -164,8 +164,8 @@ MNI = Workflow(name="MNI", base_dir=outDir)
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_files')
-MNI.connect(realign, 'realigned_files', resliceSegNat, 'target')
+MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_file')
+MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
 MNI.connect(realign, 'mean_image', coreg, 'source')
 MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
