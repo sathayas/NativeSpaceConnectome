@@ -144,6 +144,13 @@ gunzip_mask = Node(Gunzip(in_file=fmask),
 reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
                name='reslice')
 
+
+# Inverse of coregistration, T1w (native) to fMRI (native)
+invCoregNat = MapNode(spm.utils.ApplyTransform(),
+                        name='invCoregNat',
+                        iterfield=['in_file'],
+                        nested=True)
+
 # Reslice the native segmentation images to match fMRI
 resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
                         name='resliceSegNat',
@@ -170,14 +177,18 @@ MNI = Workflow(name="MNI", base_dir=outDir)
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_file')
+#MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_file')
 #MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
-MNI.connect(gunzip_T1w, 'out_file', resliceSegNat, 'space_defining')
+#MNI.connect(gunzip_T1w, 'out_file', resliceSegNat, 'space_defining')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
 MNI.connect(realign, 'mean_image', coreg, 'source')
 MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
 MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
+MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_file')
+MNI.connect(coregEst, 'invmat', invCoregNat, 'mat')
+MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
+MNI.connect(invCoregNat, 'out_file', resliceSegNat, 'in_file')
 MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
 MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
 MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
