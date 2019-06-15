@@ -126,7 +126,7 @@ coregEst = Node(spm.CalcCoregAffine(),
                 name="coregEst")
 
 # co-registration node (actual transformation)
-coreWrite = Node(spm.ApplyTransform(),
+coregWrite = Node(spm.ApplyTransform(),
                  name="coregWrite")
 
 
