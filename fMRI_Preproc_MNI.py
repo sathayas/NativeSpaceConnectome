@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import nibabel as nib
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+#import matplotlib.pyplot as plt
+#import matplotlib.image as mpimg
 import nipype.interfaces.spm as spm # importing SPM interface functions
 import nipype.interfaces.fsl as fsl # importing FSL interface functions
 from nipype import Node, MapNode, Workflow  # components to construct workflow
