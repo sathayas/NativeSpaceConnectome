@@ -148,8 +148,10 @@ resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
                         nested=True)
 
 # Reslice the template segmentation images to match fMRI
-resliceSegMNI = Node(spm.utils.ResliceToReference(interpolation=0),
-                     name='resliceSegMNI')
+resliceSegMNI = MapNode(spm.utils.Reslice(interp=0),
+                        name='resliceSegMNI',
+                        iterfield=['in_file'],
+                        nested=True)
 
 # masking the fMRI with a brain mask
 applymask = Node(fsl.ApplyMask(),
@@ -190,6 +192,8 @@ MNI.connect(normalizeT1, 'normalized_image',
                     datasink, 'Derivatives.@T1_standard')
 MNI.connect(normalizefMRI, 'normalized_image',
                     datasink, 'Derivatives.@fMRI_standard')
+MNI.connect(resliceSegNat, 'outfile',
+                    datasink, 'Derivatives.@SegNativeResliced')
 
 
 # writing out graphs
