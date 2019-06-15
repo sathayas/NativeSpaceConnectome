@@ -143,8 +143,9 @@ reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
 
 # Reslice the native segmentation images to match fMRI
 resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
+                        name='resliceSegNat',
                         iterfield=['in_file'],
-                     name='resliceSegNat')
+                        nested=True)
 
 # Reslice the template segmentation images to match fMRI
 resliceSegMNI = Node(spm.utils.ResliceToReference(interpolation=0),
