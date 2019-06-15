@@ -192,7 +192,7 @@ MNI.connect(normalizeT1, 'normalized_image',
                     datasink, 'Derivatives.@T1_standard')
 MNI.connect(normalizefMRI, 'normalized_image',
                     datasink, 'Derivatives.@fMRI_standard')
-MNI.connect(resliceSegNat, 'outfile',
+MNI.connect(resliceSegNat, 'out_file',
                     datasink, 'Derivatives.@SegNativeResliced')
 
 
