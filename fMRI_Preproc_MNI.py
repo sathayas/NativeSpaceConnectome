@@ -121,14 +121,13 @@ extract = Node(fsl.ExtractROI(in_file=imagefMRI,  # input image
 realign = Node(spm.Realign(),
                name="realign")
 
-# co-registration node (estimate affine transform)
+# coregistration, fMRI to T1w
+coreg = Node(spm.Coregister(cost_function='nmi'),
+                name="coreg")
+
+# estimating affine transform for co-registration
 coregEst = Node(spm.CalcCoregAffine(),
                 name="coregEst")
-
-# co-registration node (actual transformation)
-coregWrite = Node(spm.ApplyTransform(),
-                 name="coregWrite")
-
 
 # warping fMRI by applying the warping estimated for T1
 normalizefMRI = Node(spm.Normalize12(jobtype='write',
@@ -174,13 +173,14 @@ MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_file')
 #MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
 MNI.connect(gunzip_T1w, 'out_file', resliceSegNat, 'space_defining')
+MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
+MNI.connect(realign, 'mean_image', coreg, 'source')
+MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
 MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
-MNI.connect(realign, 'realigned_files', coregWrite, 'in_file')
-MNI.connect(coregEst, 'mat', coregWrite, 'mat')
 MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
 MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
-MNI.connect(coregWrite, 'out_file', normalizefMRI, 'image_to_align')
+MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
 MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
 MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
 MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
