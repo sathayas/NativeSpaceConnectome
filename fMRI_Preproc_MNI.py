@@ -146,7 +146,7 @@ reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
 
 
 # Inverse of coregistration, T1w (native) to fMRI (native)
-invCoregNat = MapNode(spm.utils.ApplyTransform(),
+invCoregNat = MapNode(spm.utils.ApplyInverseDeformation(),
                         name='invCoregNat',
                         iterfield=['in_file'],
                         nested=True)
@@ -186,8 +186,8 @@ MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
 MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_file')
-MNI.connect(coregEst, 'invmat', invCoregNat, 'mat')
-MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
+MNI.connect(coregEst, 'mat', invCoregNat, 'deformation')
+MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
 MNI.connect(invCoregNat, 'out_file', resliceSegNat, 'in_file')
 MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
 MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
