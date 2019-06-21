@@ -148,7 +148,7 @@ reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
 # Inverse of coregistration, T1w (native) to fMRI (native)
 invCoregNat = MapNode(spm.utils.ApplyInverseDeformation(),
                         name='invCoregNat',
-                        iterfield=['in_file'],
+                        iterfield=['in_files'],
                         nested=True)
 
 # Reslice the native segmentation images to match fMRI
