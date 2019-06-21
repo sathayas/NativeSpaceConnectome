@@ -187,30 +187,30 @@ MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_files')
 MNI.connect(coregEst, 'mat', invCoregNat, 'deformation')
-MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
-MNI.connect(invCoregNat, 'out_files', resliceSegNat, 'in_file')
-MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
-MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
-MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
-MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
-MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
-MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
-MNI.connect(reslice, 'out_file', applymask, 'mask_file')
-MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
+#MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
+#MNI.connect(invCoregNat, 'out_files', resliceSegNat, 'in_file')
+#MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
+#MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
+#MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
+#MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
+#MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
+#MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
+#MNI.connect(reslice, 'out_file', applymask, 'mask_file')
+#MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
 
 # connections to the datasink
-MNI.connect(realign, 'realignment_parameters',
-                    datasink, 'Derivatives.@mcPar')
+#MNI.connect(realign, 'realignment_parameters',
+#                    datasink, 'Derivatives.@mcPar')
 #MNI.connect(segNative, 'native_class_images',
 #                    datasink, 'Derivatives.@Seg_Native')
 #MNI.connect(segMNI, 'normalized_class_images',
 #                    datasink, 'Derivatives.@Seg_MNI')
-MNI.connect(normalizeT1, 'normalized_image',
-                    datasink, 'Derivatives.@T1_standard')
-MNI.connect(normalizefMRI, 'normalized_image',
-                    datasink, 'Derivatives.@fMRI_standard')
-MNI.connect(resliceSegNat, 'out_file',
-                    datasink, 'Derivatives.@SegNativeResliced')
+#MNI.connect(normalizeT1, 'normalized_image',
+#                    datasink, 'Derivatives.@T1_standard')
+#MNI.connect(normalizefMRI, 'normalized_image',
+#                    datasink, 'Derivatives.@fMRI_standard')
+#MNI.connect(resliceSegNat, 'out_file',
+#                    datasink, 'Derivatives.@SegNativeResliced')
 
 
 # writing out graphs
