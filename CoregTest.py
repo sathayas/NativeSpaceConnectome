@@ -177,6 +177,7 @@ MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(coregEst, 'mat', coregWrite, 'mat')
 MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
+MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 
 # running the workflow
 MNI.run()
