@@ -121,13 +121,15 @@ extract = Node(fsl.ExtractROI(in_file=imagefMRI,  # input image
 realign = Node(spm.Realign(),
                name="realign")
 
-# coregistration, fMRI to T1w
-coreg = Node(spm.Coregister(cost_function='nmi'),
-                name="coreg")
 
-# estimating affine transform for co-registration
-coregEst = Node(spm.CalcCoregAffine(),
+# estimating affine transform for co-registration, fMRI to T1
+coregEst = Node(spm.utils.CalcCoregAffine(),
                 name="coregEst")
+
+
+# estimating affine transform for co-registration, fMRI to T1
+coregWrite = Node(spm.utils.ApplyTransform(),
+                name="coregWrite")
 
 # warping fMRI by applying the warping estimated for T1
 normalizefMRI = Node(spm.Normalize12(jobtype='write',
@@ -165,61 +167,16 @@ resliceSegMNI = MapNode(spm.utils.Reslice(interp=0),
 applymask = Node(fsl.ApplyMask(),
                  name='applymask')
 
-# DataSink to collect outputs
-datasink = Node(DataSink(base_directory=outDir),
-                name='datasink')
 
 # creating a workflow
 MNI = Workflow(name="MNI", base_dir=outDir)
 
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
-MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-#MNI.connect(segNative, 'native_class_images', resliceSegNat, 'in_file')
-#MNI.connect(realign, 'realigned_files', resliceSegNat, 'space_defining')
-#MNI.connect(gunzip_T1w, 'out_file', resliceSegNat, 'space_defining')
-MNI.connect(gunzip_T1w, 'out_file', coreg, 'target')
-MNI.connect(realign, 'mean_image', coreg, 'source')
-MNI.connect(realign, 'realigned_files', coreg, 'apply_to_files')
 MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
-MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_files')
-MNI.connect(coregEst, 'mat', invCoregNat, 'deformation')
-#MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
-#MNI.connect(invCoregNat, 'out_files', resliceSegNat, 'in_file')
-#MNI.connect(gunzip_T1w, 'out_file', normalizeT1, 'image_to_align')
-#MNI.connect(normalizeT1, 'normalized_image', segMNI, 'channel_files')
-#MNI.connect(coreg, 'coregistered_files', normalizefMRI, 'image_to_align')
-#MNI.connect(normalizeT1, 'deformation_field', normalizefMRI, 'deformation_file')
-#MNI.connect(normalizefMRI, 'normalized_image', reslice, 'space_defining')
-#MNI.connect(gunzip_mask, 'out_file', reslice, 'in_file')
-#MNI.connect(reslice, 'out_file', applymask, 'mask_file')
-#MNI.connect(normalizefMRI, 'normalized_image', applymask, 'in_file')
-
-# connections to the datasink
-#MNI.connect(realign, 'realignment_parameters',
-#                    datasink, 'Derivatives.@mcPar')
-#MNI.connect(segNative, 'native_class_images',
-#                    datasink, 'Derivatives.@Seg_Native')
-#MNI.connect(segMNI, 'normalized_class_images',
-#                    datasink, 'Derivatives.@Seg_MNI')
-#MNI.connect(normalizeT1, 'normalized_image',
-#                    datasink, 'Derivatives.@T1_standard')
-#MNI.connect(normalizefMRI, 'normalized_image',
-#                    datasink, 'Derivatives.@fMRI_standard')
-#MNI.connect(resliceSegNat, 'out_file',
-#                    datasink, 'Derivatives.@SegNativeResliced')
-
-
-# writing out graphs
-MNI.write_graph(graph2use='orig', dotfilename='graph_orig.dot')
-
-# showing the graph
-#plt.figure(figsize=[10,6])
-#img=mpimg.imread(os.path.join(outDir,"MNI","graph_orig_detailed.png"))
-#imgplot = plt.imshow(img)
-#plt.axis('off')
-#plt.show()
+MNI.connect(coregEst, 'mat', coregWrite, 'mat')
+MNI.connect(realign, 'realigned_files', coregWrite, 'in_file')
 
 # running the workflow
 MNI.run()
