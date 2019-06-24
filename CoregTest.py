@@ -135,7 +135,8 @@ coregWrite = Node(spm.utils.ApplyTransform(),
 # Inverse of coregistration, T1w (native) to fMRI (native)
 invCoregNat = MapNode(spm.utils.ApplyTransform(),
                         name='invCoregNat',
-                        iterfield=['in_file'])
+                        iterfield=['in_file'],
+                        nested=True)
 
 # Reslice the native segmentation images to match fMRI
 resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
