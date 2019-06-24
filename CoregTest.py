@@ -166,7 +166,7 @@ MNI.connect(coregEst, 'mat', coregWrite, 'mat')
 MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_file')
-MNI.connect(coregEst, 'invmat', invCoregNat, 'deformation')
+MNI.connect(coregEst, 'invmat', invCoregNat, 'mat')
 MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
 MNI.connect(invCoregNat, 'out_file', resliceSegNat, 'in_file')
 
