@@ -133,8 +133,9 @@ coregWrite = Node(spm.utils.ApplyTransform(),
 
 
 # Inverse of coregistration, T1w (native) to fMRI (native)
-invCoregNat = Node(spm.utils.ApplyInverseDeformation(),
-                        name='invCoregNat')
+invCoregNat = MapNode(spm.utils.ApplyTransform(),
+                        name='invCoregNat',
+                        iterfield=['in_file'])
 
 # Reslice the native segmentation images to match fMRI
 resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
@@ -163,7 +164,7 @@ MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(coregEst, 'mat', coregWrite, 'mat')
 MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_files')
+MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_file')
 MNI.connect(coregEst, 'mat', invCoregNat, 'deformation')
 MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
 MNI.connect(invCoregNat, 'out_files', resliceSegNat, 'in_file')
