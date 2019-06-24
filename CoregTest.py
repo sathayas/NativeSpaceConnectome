@@ -129,7 +129,7 @@ coregEst = Node(spm.utils.CalcCoregAffine(),
 
 # estimating affine transform for co-registration, fMRI to T1
 coregWrite = Node(spm.utils.ApplyTransform(),
-                name="coregWrite")
+                  name="coregWrite")
 
 # warping fMRI by applying the warping estimated for T1
 normalizefMRI = Node(spm.Normalize12(jobtype='write',
@@ -176,7 +176,7 @@ MNI.connect(extract, 'roi_file', realign, 'in_files')
 MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(coregEst, 'mat', coregWrite, 'mat')
-MNI.connect(realign, 'realigned_files', coregWrite, 'in_file')
+MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
 
 # running the workflow
 MNI.run()
