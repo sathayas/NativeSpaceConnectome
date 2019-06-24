@@ -131,21 +131,6 @@ coregEst = Node(spm.utils.CalcCoregAffine(),
 coregWrite = Node(spm.utils.ApplyTransform(),
                   name="coregWrite")
 
-# warping fMRI by applying the warping estimated for T1
-normalizefMRI = Node(spm.Normalize12(jobtype='write',
-                                     write_bounding_box=[[-90, -120, -70],
-                                                        [90, 90, 105]],
-                                     write_voxel_sizes=voxfMRI),
-                     name="normalizefMRI")
-
-# gunzip node, FSL brain mask
-gunzip_mask = Node(Gunzip(in_file=fmask),
-                   name="gunzip_mask")
-
-# Reslice the FSL template to match fMRI
-reslice = Node(spm.utils.Reslice(),  # FSL mask image needs to be resliced
-               name='reslice')
-
 
 # Inverse of coregistration, T1w (native) to fMRI (native)
 invCoregNat = Node(spm.utils.ApplyInverseDeformation(),
@@ -177,7 +162,11 @@ MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
 MNI.connect(realign, 'mean_image', coregEst, 'moving')
 MNI.connect(coregEst, 'mat', coregWrite, 'mat')
 MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
-MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
+MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_files')
+MNI.connect(coregEst, 'mat', invCoregNat, 'deformation')
+MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
+MNI.connect(invCoregNat, 'out_files', resliceSegNat, 'in_file')
+
 
 # running the workflow
 MNI.run()
