@@ -92,17 +92,6 @@ gunzip_T1w = Node(Gunzip(in_file=imageT1),
 segNative = Node(spm.NewSegment(),
                  name='segNative')
 
-# Normalize - normalizes structural images to the MNI template
-normalizeT1 = Node(spm.Normalize12(jobtype='estwrite',
-                                    tpm=fTPM,
-                                    write_bounding_box=[[-90, -120, -70],
-                                                        [90, 90, 105]]),
-                   name="normalizeT1")
-
-# Segmentation, template space
-segMNI = Node(spm.NewSegment(),
-              name='segMNI')
-
 
 
 
@@ -122,37 +111,10 @@ realign = Node(spm.Realign(),
                name="realign")
 
 
-# estimating affine transform for co-registration, fMRI to T1
-coregEst = Node(spm.utils.CalcCoregAffine(),
-                name="coregEst")
+# coregistration, T1w (native) to fMRI (native)
+coreg = Node(spm.Coregister(cost_function='nmi'),
+                name="coreg")
 
-
-# estimating affine transform for co-registration, fMRI to T1
-coregWrite = Node(spm.utils.ApplyTransform(),
-                  name="coregWrite")
-
-
-# Inverse of coregistration, T1w (native) to fMRI (native)
-invCoregNat = MapNode(spm.utils.ApplyTransform(),
-                        name='invCoregNat',
-                        iterfield=['in_file'],
-                        nested=True)
-
-# Reslice the native segmentation images to match fMRI
-resliceSegNat = MapNode(spm.utils.Reslice(interp=0),
-                        name='resliceSegNat',
-                        iterfield=['in_file'],
-                        nested=True)
-
-# Reslice the template segmentation images to match fMRI
-resliceSegMNI = MapNode(spm.utils.Reslice(interp=0),
-                        name='resliceSegMNI',
-                        iterfield=['in_file'],
-                        nested=True)
-
-# masking the fMRI with a brain mask
-applymask = Node(fsl.ApplyMask(),
-                 name='applymask')
 
 
 # creating a workflow
@@ -160,15 +122,10 @@ MNI = Workflow(name="MNI", base_dir=outDir)
 
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
-MNI.connect(gunzip_T1w, 'out_file', coregEst, 'target')
-MNI.connect(realign, 'mean_image', coregEst, 'moving')
-MNI.connect(coregEst, 'mat', coregWrite, 'mat')
-MNI.connect(realign, 'mean_image', coregWrite, 'in_file')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(segNative, 'native_class_images', invCoregNat, 'in_file')
-MNI.connect(coregEst, 'invmat', invCoregNat, 'mat')
-MNI.connect(realign, 'mean_image', resliceSegNat, 'space_defining')
-MNI.connect(invCoregNat, 'out_file', resliceSegNat, 'in_file')
+MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
+MNI.connect(realign, 'mean_image', coreg, 'target')
+MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
 
 
 # running the workflow
