@@ -116,7 +116,7 @@ coregEst = Node(spm.Coregister(cost_function='nmi', jobtype='estimate'),
                 name="coregEst")
 
 # coregistration, writing, T1w (native) to fMRI (native)
-coregWrite = MapNode(spm.Coregister(cost_function='nmi', jobtype='write'),
+coregWrite = MapNode(spm.Coregister(cost_function='nmi', jobtype='estwrite'),
                      name="coregWrite",
                      iterfield=['apply_to_files'],
                      nested=True)
@@ -128,8 +128,8 @@ MNI = Workflow(name="MNI", base_dir=outDir)
 # connecting the nodes to the main workflow
 MNI.connect(extract, 'roi_file', realign, 'in_files')
 MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(gunzip_T1w, 'out_file', coregEst, 'source')
-MNI.connect(realign, 'mean_image', coregEst, 'target')
+#MNI.connect(gunzip_T1w, 'out_file', coregEst, 'source')
+#MNI.connect(realign, 'mean_image', coregEst, 'target')
 MNI.connect(gunzip_T1w, 'out_file', coregWrite, 'source')
 MNI.connect(realign, 'mean_image', coregWrite, 'target')
 MNI.connect(segNative, 'native_class_images', coregWrite, 'apply_to_files')
