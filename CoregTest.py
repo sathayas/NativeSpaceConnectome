@@ -82,7 +82,7 @@ if not os.path.exists(outDir):
 
 
 #
-#    T1 Normalization nodes
+#    T1-related nodes
 #
 # gunzip node
 gunzip_T1w = Node(Gunzip(in_file=imageT1),
@@ -91,7 +91,6 @@ gunzip_T1w = Node(Gunzip(in_file=imageT1),
 # Segmentation, native space
 segNative = Node(spm.NewSegment(),
                  name='segNative')
-
 
 
 
@@ -111,13 +110,24 @@ realign = Node(spm.Realign(),
                name="realign")
 
 
-# coregistration, T1w (native) to fMRI (native)
+
+
+#
+#    Tissue map nodes
+#
+# coregistration, tissue images (native) to fMRI (native)
 coreg = MapNode(spm.Coregister(cost_function='nmi',
                                jobtype='estwrite',
                                write_interp=0),
                 name="coreg",
                 iterfield=['apply_to_files'],
                 nested=True)
+
+# filling in the holes, with fslmaths
+fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
+                    name='fillHoles',
+                    iterfield=['in_file'],
+                    nested=True)
 
 
 # creating a workflow
@@ -129,6 +139,7 @@ MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
+MNI.connect(coreg, 'coregistered_files', fillHoles, 'in_file')
 
 # running the workflow
 MNI.run()
