@@ -20,16 +20,16 @@ sites = ['Berlin_Margulies',
          'Queensland'
          ]
 # Directory where resting-state raw data reside
-#dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
-dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
+dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
+#dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
 # template (it has to be tissue probability maps)
-#fTPM = '/usr/local/spm12/tpm/TPM.nii'
-fTPM = '/Users/sh45474/SoftwareTools/spm12/tpm/TPM.nii'
+fTPM = '/usr/local/spm12/tpm/TPM.nii'
+#fTPM = '/Users/sh45474/SoftwareTools/spm12/tpm/TPM.nii'
 # brain mask in MNI space (from FSL)
 fmask = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask_dil.nii.gz'
 # Output directory (base)
-#outDirBase = '/home/satoru/Projects/NativeSpaceConnectome/ProcessedData'
-outDirBase = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/ProcessedData'
+outDirBase = '/home/satoru/Projects/NativeSpaceConnectome/ProcessedData'
+#outDirBase = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/ProcessedData'
 
 
 ##### Choosing a single subject as to test the pipeline
@@ -138,6 +138,14 @@ dilate1 = MapNode(fsl.maths.DilateImage(operation='mean',
                   nested=True)
 
 
+# erosion with fslmaths
+erode1 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
+                                      kernel_size=0.75),
+                 name='erode1',
+                 iterfield=['in_file'],
+                 nested=True)
+
+
 
 # creating a workflow
 MNI = Workflow(name="MNI", base_dir=outDir)
@@ -148,8 +156,9 @@ MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
-MNI.connect(coreg, 'coregistered_files', fillHoles, 'in_file')
-MNI.connect(fillHoles, 'out_file', dilate1, 'in_file')
+MNI.connect(coreg, 'coregistered_files', dilate1, 'in_file')
+MNI.connect(dilate1, 'out_file', fillHoles, 'in_file')
+MNI.connect(fillHoles, 'out_file', erode1, 'in_file')
 
 # running the workflow
 MNI.run()
