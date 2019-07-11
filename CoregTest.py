@@ -130,7 +130,9 @@ fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
                     nested=True)
 
 # dilation with fslmaths
-dilate1 = MapNode(fsl.maths.DilateImage(operation='mean'),
+dilate1 = MapNode(fsl.maths.DilateImage(operation='mean',
+                                        kernel_shape='boxv',
+                                        kernel_size=0.75),
                   name='dilate1',
                   iterfield=['in_file'],
                   nested=True)
