@@ -129,6 +129,13 @@ fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
                     iterfield=['in_file'],
                     nested=True)
 
+# dilation with fslmaths
+dilate1 = MapNode(fsl.maths.DilateImage(operation='mean'),
+                  name='dilate1',
+                  iterfield=['in_file'],
+                  nested=True)
+
+
 
 # creating a workflow
 MNI = Workflow(name="MNI", base_dir=outDir)
