@@ -20,7 +20,7 @@ sites = ['Berlin_Margulies',
          'Queensland'
          ]
 # kernel size for erosion / dilation
-k_size = 0.75
+k_size = 0.6
 # Directory where resting-state raw data reside
 dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 #dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
