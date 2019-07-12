@@ -181,7 +181,7 @@ MNI.connect(coreg, 'coregistered_files', dilate1, 'in_file')
 MNI.connect(dilate1, 'out_file', fillHoles1, 'in_file')
 MNI.connect(fillHoles1, 'out_file', erode1, 'in_file')
 MNI.connect(erode1, 'out_file', dilate2, 'in_file')
-MNI.connect(dilate2, 'out_file', , erode2, 'in_file')
+MNI.connect(dilate2, 'out_file', erode2, 'in_file')
 
 # running the workflow
 MNI.run()
