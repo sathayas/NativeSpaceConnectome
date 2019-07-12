@@ -126,10 +126,16 @@ coreg = MapNode(spm.Coregister(cost_function='nmi',
                 nested=True)
 
 # filling in the holes, with fslmaths
-fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
-                    name='fillHoles',
+fillHoles1 = MapNode(fsl.maths.MathsCommand(args='-fillh'),
+                    name='fillHoles2',
                     iterfield=['in_file'],
                     nested=True)
+
+fillHoles2 = MapNode(fsl.maths.MathsCommand(args='-fillh'),
+                    name='fillHoles2',
+                    iterfield=['in_file'],
+                    nested=True)
+
 
 # dilation with fslmaths
 dilate1 = MapNode(fsl.maths.DilateImage(operation='mean',
@@ -172,9 +178,11 @@ MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
 MNI.connect(coreg, 'coregistered_files', dilate1, 'in_file')
-MNI.connect(dilate1, 'out_file', erode1, 'in_file')
+MNI.connect(dilate1, 'out_file', fillHoles1, 'in_file')
+MNI.connect(fillHoles1, 'out_file', erode1, 'in_file')
 MNI.connect(erode1, 'out_file', dilate2, 'in_file')
-MNI.connect(dilate2, 'out_file', erode2, 'in_file')
+MNI.connect(dilate2, 'out_file', fillHoles2, 'in_file')
+MNI.connect(fillHoles2, 'out_file', erode2, 'in_file')
 
 # running the workflow
 MNI.run()
