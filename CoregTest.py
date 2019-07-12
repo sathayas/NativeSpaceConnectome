@@ -127,7 +127,7 @@ coreg = MapNode(spm.Coregister(cost_function='nmi',
 
 # filling in the holes, with fslmaths
 fillHoles1 = MapNode(fsl.maths.MathsCommand(args='-fillh'),
-                    name='fillHoles2',
+                    name='fillHoles1',
                     iterfield=['in_file'],
                     nested=True)
 
