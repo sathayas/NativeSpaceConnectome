@@ -126,43 +126,25 @@ coreg = MapNode(spm.Coregister(cost_function='nmi',
                 nested=True)
 
 # filling in the holes, with fslmaths
-fillHoles1 = MapNode(fsl.maths.MathsCommand(args='-fillh'),
-                    name='fillHoles1',
+fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
+                    name='fillHoles',
                     iterfield=['in_file'],
                     nested=True)
-
-fillHoles2 = MapNode(fsl.maths.MathsCommand(args='-fillh'),
-                    name='fillHoles2',
-                    iterfield=['in_file'],
-                    nested=True)
-
 
 # dilation with fslmaths
-dilate1 = MapNode(fsl.maths.DilateImage(operation='mean',
+dilate = MapNode(fsl.maths.DilateImage(operation='mean',
                                         kernel_shape='boxv',
                                         kernel_size=k_size),
-                  name='dilate1',
+                  name='dilate',
                   iterfield=['in_file'],
                   nested=True)
 
-dilate2 = MapNode(fsl.maths.DilateImage(operation='mean',
-                                        kernel_shape='boxv',
-                                        kernel_size=k_size),
-                  name='dilate2',
-                  iterfield=['in_file'],
-                  nested=True)
 
 
 # erosion with fslmaths
-erode1 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
+erode = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
                                       kernel_size=k_size),
-                 name='erode1',
-                 iterfield=['in_file'],
-                 nested=True)
-
-erode2 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
-                                      kernel_size=k_size),
-                 name='erode2',
+                 name='erode',
                  iterfield=['in_file'],
                  nested=True)
 
@@ -177,11 +159,9 @@ MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
-MNI.connect(coreg, 'coregistered_files', dilate1, 'in_file')
-MNI.connect(dilate1, 'out_file', dilate2, 'in_file')
-MNI.connect(dilate2, 'out_file', fillHoles1, 'in_file')
-MNI.connect(fillHoles1, 'out_file', erode1, 'in_file')
-MNI.connect(erode1, 'out_file', erode2, 'in_file')
+MNI.connect(coreg, 'coregistered_files', dilate, 'in_file')
+MNI.connect(dilate, 'out_file', fillHoles, 'in_file')
+MNI.connect(fillHoles, 'out_file', erode, 'in_file')
 
 # running the workflow
 MNI.run()
