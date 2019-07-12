@@ -19,6 +19,8 @@ sites = ['Berlin_Margulies',
          'Oxford',
          'Queensland'
          ]
+# kernel size for erosion / dilation
+k_size = 0.75
 # Directory where resting-state raw data reside
 dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 #dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
@@ -132,14 +134,14 @@ fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
 # dilation with fslmaths
 dilate1 = MapNode(fsl.maths.DilateImage(operation='mean',
                                         kernel_shape='boxv',
-                                        kernel_size=0.75),
+                                        kernel_size=k_size),
                   name='dilate1',
                   iterfield=['in_file'],
                   nested=True)
 
 dilate2 = MapNode(fsl.maths.DilateImage(operation='mean',
                                         kernel_shape='boxv',
-                                        kernel_size=0.75),
+                                        kernel_size=k_size),
                   name='dilate2',
                   iterfield=['in_file'],
                   nested=True)
@@ -147,13 +149,13 @@ dilate2 = MapNode(fsl.maths.DilateImage(operation='mean',
 
 # erosion with fslmaths
 erode1 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
-                                      kernel_size=0.75),
+                                      kernel_size=k_size),
                  name='erode1',
                  iterfield=['in_file'],
                  nested=True)
 
 erode2 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
-                                      kernel_size=0.75),
+                                      kernel_size=k_size),
                  name='erode2',
                  iterfield=['in_file'],
                  nested=True)
@@ -170,10 +172,9 @@ MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
 MNI.connect(coreg, 'coregistered_files', dilate1, 'in_file')
-MNI.connect(dilate1, 'out_file', dilate2, 'in_file')
-MNI.connect(dilate2, 'out_file', fillHoles, 'in_file')
-MNI.connect(fillHoles, 'out_file', erode1, 'in_file')
-MNI.connect(erode1, 'out_file', erode2, 'in_file')
+MNI.connect(dilate1, 'out_file', erode1, 'in_file')
+MNI.connect(erode1, 'out_file', dilate2, 'in_file')
+MNI.connect(dilate2, 'out_file', erode2, 'in_file')
 
 # running the workflow
 MNI.run()
