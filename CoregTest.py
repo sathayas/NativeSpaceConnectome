@@ -168,7 +168,8 @@ MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
 MNI.connect(coreg, 'coregistered_files', thresh, 'in_file')
-MNI.connect(thresh, 'out_file', dilate, 'in_file')
+MNI.connect(thresh, 'out_file', fillHoles, 'in_file')
+MNI.connect(fillHoles, 'out_file', dilate, 'in_file')
 MNI.connect(dilate, 'out_file', erode, 'in_file')
 
 # running the workflow
