@@ -21,6 +21,8 @@ sites = ['Berlin_Margulies',
          ]
 # kernel size for erosion / dilation
 k_size = 1
+# threshold for binarization
+bTh = 0.8
 # Directory where resting-state raw data reside
 dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 #dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
@@ -125,6 +127,12 @@ coreg = MapNode(spm.Coregister(cost_function='nmi',
                 iterfield=['apply_to_files'],
                 nested=True)
 
+# thresholding
+thresh = MapNode(fsl.maths.Threshold(thresh=bTh),
+                 name='thresh',
+                 iterfiled=['in_file'],
+                 nested=True)
+
 # filling in the holes, with fslmaths
 fillHoles = MapNode(fsl.maths.MathsCommand(args='-fillh'),
                     name='fillHoles',
@@ -159,8 +167,8 @@ MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
 MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
 MNI.connect(realign, 'mean_image', coreg, 'target')
 MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
-MNI.connect(coreg, 'coregistered_files', fillHoles, 'in_file')
-MNI.connect(fillHoles, 'out_file', dilate, 'in_file')
+MNI.connect(coreg, 'coregistered_files', thresh, 'in_file')
+MNI.connect(thresh, 'out_file', dilate, 'in_file')
 MNI.connect(dilate, 'out_file', erode, 'in_file')
 
 # running the workflow
