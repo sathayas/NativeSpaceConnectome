@@ -22,7 +22,7 @@ sites = ['Berlin_Margulies',
 # kernel size for erosion / dilation
 k_size = 1
 # threshold for binarization
-bTh = 0.8
+bTh = 0.5
 # Directory where resting-state raw data reside
 dataDir = '/home/satoru/Projects/Connectome/Data/1000FCP'
 #dataDir = '/Users/sh45474/Documents/Research/Project/NativeSpaceConnectome/Data'
