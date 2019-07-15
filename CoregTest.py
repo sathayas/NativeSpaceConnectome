@@ -130,7 +130,7 @@ coreg = MapNode(spm.Coregister(cost_function='nmi',
 # thresholding
 thresh = MapNode(fsl.maths.Threshold(thresh=bTh),
                  name='thresh',
-                 iterfiled=['in_file'],
+                 iterfield=['in_file'],
                  nested=True)
 
 # filling in the holes, with fslmaths
