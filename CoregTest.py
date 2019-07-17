@@ -175,6 +175,10 @@ erodeDeep = MapNode(fsl.maths.ErodeImage(),
                     nested=True)
 
 
+# DataSink to collect outputs
+datasink = Node(DataSink(base_directory=outDir),
+                name='datasink')
+
 
 # creating a workflow
 MNI = Workflow(name="MNI", base_dir=outDir)
@@ -192,6 +196,24 @@ MNI.connect(erode, 'out_file', smooth, 'in_file')
 MNI.connect(smooth, 'out_file', thresh, 'in_file')
 MNI.connect(thresh, 'out_file', binarize, 'in_file')
 MNI.connect(coreg, 'coregistered_files', erodeDeep, 'in_file')
+
+# connections to the datasink
+MNI.connect(realign, 'realignment_parameters',
+                    datasink, 'Derivatives.@mcPar')
+MNI.connect(realign, 'mean_image',
+                    datasink, 'Derivatives.@mean_fMRI')
+MNI.connect(realign, 'realigned_files',
+                    datasink, 'Derivatives.@moCorfMRI')
+MNI.connect(coreg, 'coregistered_files',
+                    datasink, 'Derivatives.@tissueSeg')
+MNI.connect(binarize, 'out_file',
+                    datasink, 'Derivatives.@binaryGMMask')
+MNI.connect(erodeDeep, 'out_file',
+                    datasink, 'Derivatives.@deepWMMask')
+
+
+
+
 
 # running the workflow
 MNI.run()
