@@ -155,8 +155,6 @@ dilate = MapNode(fsl.maths.DilateImage(operation='max',
                   iterfield=['in_file'],
                   nested=True)
 
-
-
 # erosion with fslmaths
 erode = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
                                       kernel_size=k_size),
@@ -164,6 +162,11 @@ erode = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
                  iterfield=['in_file'],
                  nested=True)
 
+# binarization, with fslmaths
+binarize = MapNode(fsl.maths.MathsCommand(args='-bin'),
+                    name='binarize',
+                    iterfield=['in_file'],
+                    nested=True)
 
 
 # creating a workflow
@@ -180,6 +183,7 @@ MNI.connect(dilate, 'out_file', fillHoles, 'in_file')
 MNI.connect(fillHoles, 'out_file', erode, 'in_file')
 MNI.connect(erode, 'out_file', smooth, 'in_file')
 MNI.connect(smooth, 'out_file', thresh, 'in_file')
+MNI.connect(thresh, 'out_file', binarize, 'in_file')
 
 # running the workflow
 MNI.run()
