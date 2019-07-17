@@ -168,17 +168,11 @@ binarize = MapNode(fsl.maths.MathsCommand(args='-bin'),
                     iterfield=['in_file'],
                     nested=True)
 
-# double-erosion with fslmaths
-erode1 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
-                                      kernel_size=k_size),
-                 name='erode1',
-                 iterfield=['in_file'],
-                 nested=True)
-erode2 = MapNode(fsl.maths.ErodeImage(kernel_shape='boxv',
-                                      kernel_size=k_size),
-                 name='erode2',
-                 iterfield=['in_file'],
-                 nested=True)
+# erosion to identify deep tissue with fslmaths
+erodeDeep = MapNode(fsl.maths.ErodeImage(),
+                    name='erodeDeep',
+                    iterfield=['in_file'],
+                    nested=True)
 
 
 
@@ -197,8 +191,7 @@ MNI.connect(fillHoles, 'out_file', erode, 'in_file')
 MNI.connect(erode, 'out_file', smooth, 'in_file')
 MNI.connect(smooth, 'out_file', thresh, 'in_file')
 MNI.connect(thresh, 'out_file', binarize, 'in_file')
-MNI.connect(coreg, 'coregistered_files', erode1, 'in_file')
-MNI.connect(erode1, 'out_file', erode2, 'in_file')
+MNI.connect(coreg, 'coregistered_files', erodeDeep, 'in_file')
 
 # running the workflow
 MNI.run()
