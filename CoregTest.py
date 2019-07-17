@@ -79,7 +79,7 @@ outDirSubj = os.path.join(outDirSite, iSubj)
 if not os.path.exists(outDirSubj):
     os.makedirs(outDirSubj)
 
-# finally, output directory for the results in MNI space
+# finally, output directory for the results in Native space
 outDir = outDirSubj
 # if the directory doesn't exist, create it
 if not os.path.exists(outDir):
@@ -181,34 +181,34 @@ datasink = Node(DataSink(base_directory=outDir),
 
 
 # creating a workflow
-MNI = Workflow(name="MNI", base_dir=outDir)
+Native = Workflow(name="Native", base_dir=outDir)
 
 # connecting the nodes to the main workflow
-MNI.connect(extract, 'roi_file', realign, 'in_files')
-MNI.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
-MNI.connect(gunzip_T1w, 'out_file', coreg, 'source')
-MNI.connect(realign, 'mean_image', coreg, 'target')
-MNI.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
-MNI.connect(coreg, 'coregistered_files', dilate, 'in_file')
-MNI.connect(dilate, 'out_file', fillHoles, 'in_file')
-MNI.connect(fillHoles, 'out_file', erode, 'in_file')
-MNI.connect(erode, 'out_file', smooth, 'in_file')
-MNI.connect(smooth, 'out_file', thresh, 'in_file')
-MNI.connect(thresh, 'out_file', binarize, 'in_file')
-MNI.connect(coreg, 'coregistered_files', erodeDeep, 'in_file')
+Native.connect(extract, 'roi_file', realign, 'in_files')
+Native.connect(gunzip_T1w, 'out_file', segNative, 'channel_files')
+Native.connect(gunzip_T1w, 'out_file', coreg, 'source')
+Native.connect(realign, 'mean_image', coreg, 'target')
+Native.connect(segNative, 'native_class_images', coreg, 'apply_to_files')
+Native.connect(coreg, 'coregistered_files', dilate, 'in_file')
+Native.connect(dilate, 'out_file', fillHoles, 'in_file')
+Native.connect(fillHoles, 'out_file', erode, 'in_file')
+Native.connect(erode, 'out_file', smooth, 'in_file')
+Native.connect(smooth, 'out_file', thresh, 'in_file')
+Native.connect(thresh, 'out_file', binarize, 'in_file')
+Native.connect(coreg, 'coregistered_files', erodeDeep, 'in_file')
 
 # connections to the datasink
-MNI.connect(realign, 'realignment_parameters',
+Native.connect(realign, 'realignment_parameters',
                     datasink, 'Derivatives.@mcPar')
-MNI.connect(realign, 'mean_image',
+Native.connect(realign, 'mean_image',
                     datasink, 'Derivatives.@mean_fMRI')
-MNI.connect(realign, 'realigned_files',
+Native.connect(realign, 'realigned_files',
                     datasink, 'Derivatives.@moCorfMRI')
-MNI.connect(coreg, 'coregistered_files',
+Native.connect(coreg, 'coregistered_files',
                     datasink, 'Derivatives.@tissueSeg')
-MNI.connect(binarize, 'out_file',
+Native.connect(binarize, 'out_file',
                     datasink, 'Derivatives.@binaryGMMask')
-MNI.connect(erodeDeep, 'out_file',
+Native.connect(erodeDeep, 'out_file',
                     datasink, 'Derivatives.@deepWMMask')
 
 
@@ -216,4 +216,4 @@ MNI.connect(erodeDeep, 'out_file',
 
 
 # running the workflow
-MNI.run()
+Native.run()
