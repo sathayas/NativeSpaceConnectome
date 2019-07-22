@@ -199,17 +199,17 @@ Native.connect(coreg, 'coregistered_files', erodeDeep, 'in_file')
 
 # connections to the datasink
 Native.connect(realign, 'realignment_parameters',
-                    datasink, 'Derivatives.@mcPar')
+                    datasink, 'DerivativesNative.@mcPar')
 Native.connect(realign, 'mean_image',
-                    datasink, 'Derivatives.@mean_fMRI')
+                    datasink, 'DerivativesNative.@mean_fMRI')
 Native.connect(realign, 'realigned_files',
-                    datasink, 'Derivatives.@moCorfMRI')
+                    datasink, 'DerivativesNative.@moCorfMRI')
 Native.connect(coreg, 'coregistered_files',
-                    datasink, 'Derivatives.@tissueSeg')
+                    datasink, 'DerivativesNative.@tissueSeg')
 Native.connect(binarize, 'out_file',
-                    datasink, 'Derivatives.@binaryGMMask')
+                    datasink, 'DerivativesNative.@binaryGMMask')
 Native.connect(erodeDeep, 'out_file',
-                    datasink, 'Derivatives.@deepWMMask')
+                    datasink, 'DerivativesNative.@deepWMMask')
 
 
 
